@@ -9,7 +9,7 @@ server.use(bodyParser.json());
 server.use(bodyParser.urlencoded({ extended: true }));
 server.use(express.static('public'));
 
-server.get('/ping', (request, response) => {
+server.get('/api/ping', (request, response) => {
     response.json({ ping: true })
 });
 

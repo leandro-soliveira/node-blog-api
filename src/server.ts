@@ -18,5 +18,5 @@ server.use('/api', mainRoutes);
 
 
 server.listen(4444, () => {
-    console.log('B7Blog backend porta http://localhost:4444')
+    console.log('API Blog backend porta http://localhost:4444')
 })

@@ -1,7 +1,8 @@
-import { RequestHandler } from "express";
+import { RequestHandler, Response } from "express";
 import z from "zod";
 import { createdUser, veryfyUser } from "../services/user";
 import { createToken } from "../services/auth";
+import { ExtenedRequest } from "../types/extended-request";
 
 export const signup: RequestHandler = async (request, response) => {
     const schema = z.object({
@@ -77,6 +78,6 @@ export const signin: RequestHandler = async (request, response) => {
     })
 };
 
-export const validete: RequestHandler = async (request, response) => {
-    return response.status(501).json({ message: "Not implemented yet" });
+export const validete = async (request: ExtenedRequest, response: Response) => {
+    response.json({ user: request.user });
 };

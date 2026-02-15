@@ -6,3 +6,14 @@ export const createJWT = (payload: any) => {
         process.env.JWT_KEY as string
     )
 }
+
+export const readJWT = (hash: string) => {
+    try {
+        return jwt.verify(
+            hash,
+            process.env.JWT_KEY as string
+        );
+    } catch (error) {
+        return false;
+    };
+};

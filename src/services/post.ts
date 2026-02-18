@@ -2,6 +2,7 @@ import { v4 } from "uuid";
 import fs from 'fs/promises';
 import slug from "slug";
 import { prisma } from "../libs/prisma";
+import { Prisma } from "../libs/generated/prisma/client";
 
 export const handleCover = async (file: Express.Multer.File) => {
 
@@ -63,8 +64,15 @@ type CreatePostProps = {
     tags: string;
     body: string;
     cover: string;
-}
+};
 
 export const createPost = async (data: CreatePostProps) => {
     return await prisma.post.create({ data });
-}
+};
+
+export const updatePost = async (slug: string, data: Prisma.PostUpdateInput) => {
+    return await prisma.post.update({
+        where: { slug },
+        data
+    });
+};

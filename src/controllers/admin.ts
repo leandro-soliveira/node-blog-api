@@ -1,7 +1,7 @@
 import { RequestHandler, Response } from "express";
 import { ExtenedRequest } from "../types/extended-request";
 import z from "zod";
-import { createPost, createPostSlug, handleCover } from "../services/post";
+import { createPost, createPostSlug, getPostBySlug, handleCover, updatePost } from "../services/post";
 import { getUserById } from "../services/user";
 import { coverToUrl } from "../utils/cover-to-url";
 
@@ -68,6 +68,83 @@ export const addPost = async (request: ExtenedRequest, response: Response) => {
     })
 };
 
+export const editPost: RequestHandler = async (request: ExtenedRequest, response: Response) => {
+    const { slug } = request.params;
+
+    if (typeof slug !== "string") {
+        return response.status(400).json({ error: "Slug inválido" });
+    }
+
+    const schema = z.object({
+        status: z.enum(['PUBLISHED', 'DRAFT']).optional(),
+        title: z
+            .string()
+            .trim()
+            .min(5, "Título deve ter pelo menos 5 caracteres")
+            .max(120, "Título muito longo")
+            .optional(),
+        tags: z.string().trim().optional(),
+        body: z.string().trim().min(10, "O conteúdo deve ter pelo menos 10 caraceteres").optional()
+    });
+
+    const data = schema.safeParse(request.body);
+
+    if (!data.success) {
+        const erros = data.error.issues.map(issue => ({
+            field: issue.path[0],
+            message: issue.message
+        }));
+        return response.status(400).json({ erros });
+    };
+
+    const hasBodyData = Object.keys(data.data).length > 0;
+    const hasFile = !!request.file;
+
+    if (!hasBodyData && !hasFile) {
+        return response.status(400).json({
+            error: "Nenhum dado enviado para atualização"
+        });
+    };
+
+    const post = await getPostBySlug(slug);
+
+    if (!post) {
+        return response.status(404).json({ error: 'Post não encontrado' })
+    };
+
+    let coverName: string | false = false;
+    if (request.file) {
+        coverName = await handleCover(request.file);
+        if (!coverName) {
+            return response.status(400).json({ error: 'Arquivo inválido' });
+        }
+    };
+
+    const updatedPost = await updatePost(slug, {
+        updatedAt: new Date(),
+        status: data.data.status ?? undefined,
+        title: data.data.title ?? undefined,
+        tags: data.data.tags ?? undefined,
+        body: data.data.body ?? undefined,
+        cover: coverName ? coverName : undefined
+    });
+
+    const author = await getUserById(updatedPost.authorId);
+
+    response.status(200).json({
+        post: {
+            id: updatedPost.id,
+            status: updatedPost.status,
+            title: updatedPost.title,
+            createdAt: updatedPost.createdAt,
+            cover: coverToUrl(updatedPost.cover),
+            tags: updatedPost.tags,
+            authorName: author?.name
+        }
+    });
+
+};
+
 export const getPosts: RequestHandler = async (request, response) => {
     return response.status(501).json({ message: "Not implemented yet" });
 };
@@ -76,9 +153,6 @@ export const getPost: RequestHandler = async (request, response) => {
     return response.status(501).json({ message: "Not implemented yet" });
 };
 
-export const editPost: RequestHandler = async (request, response) => {
-    return response.status(501).json({ message: "Not implemented yet" });
-};
 
 export const removePost: RequestHandler = async (request, response) => {
     return response.status(501).json({ message: "Not implemented yet" });

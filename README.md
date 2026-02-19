@@ -22,3 +22,11 @@ This project includes authentication with JWT, password hashing with bcrypt, fil
 git clone https://github.com/leandro-soliveira/node-blog-api.git
 cd node-blog-api
 npm install
+```
+
+## ▶️ Running the Project
+
+```bash
+npx prisma migrate dev
+npm run dev
+```

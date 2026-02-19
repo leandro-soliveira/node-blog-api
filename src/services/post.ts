@@ -76,3 +76,7 @@ export const updatePost = async (slug: string, data: Prisma.PostUpdateInput) => 
         data
     });
 };
+
+export const deletePost = async (slug: string) => {
+    return await prisma.post.delete({ where: { slug } });
+};

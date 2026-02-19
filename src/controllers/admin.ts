@@ -1,7 +1,7 @@
 import { RequestHandler, Response } from "express";
 import { ExtenedRequest } from "../types/extended-request";
 import z from "zod";
-import { createPost, createPostSlug, getPostBySlug, handleCover, updatePost } from "../services/post";
+import { createPost, createPostSlug, deletePost, getPostBySlug, handleCover, updatePost } from "../services/post";
 import { getUserById } from "../services/user";
 import { coverToUrl } from "../utils/cover-to-url";
 
@@ -68,12 +68,12 @@ export const addPost = async (request: ExtenedRequest, response: Response) => {
     })
 };
 
-export const editPost: RequestHandler = async (request: ExtenedRequest, response: Response) => {
+export const editPost = async (request: ExtenedRequest, response: Response) => {
     const { slug } = request.params;
 
     if (typeof slug !== "string") {
         return response.status(400).json({ error: "Slug inválido" });
-    }
+    };
 
     const schema = z.object({
         status: z.enum(['PUBLISHED', 'DRAFT']).optional(),
@@ -154,6 +154,19 @@ export const getPost: RequestHandler = async (request, response) => {
 };
 
 
-export const removePost: RequestHandler = async (request, response) => {
-    return response.status(501).json({ message: "Not implemented yet" });
+export const removePost = async (request: ExtenedRequest, response: Response) => {
+    const { slug } = request.params;
+
+    if (typeof slug !== "string") {
+        return response.status(400).json({ error: "Slug inválido" });
+    };
+
+    const post = await getPostBySlug(slug);
+    if (!post) {
+        return response.status(404).json({ error: "Post não encontrado" });
+    };
+
+    await deletePost(post.slug);
+
+    return response.status(204).send();
 };

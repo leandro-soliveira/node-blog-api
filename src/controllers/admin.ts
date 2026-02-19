@@ -1,9 +1,44 @@
 import { RequestHandler, Response } from "express";
 import { ExtenedRequest } from "../types/extended-request";
 import z from "zod";
-import { createPost, createPostSlug, deletePost, getPostBySlug, handleCover, updatePost } from "../services/post";
+import { createPost, createPostSlug, deletePost, getAllPosts, getPostBySlug, handleCover, updatePost } from "../services/post";
 import { getUserById } from "../services/user";
 import { coverToUrl } from "../utils/cover-to-url";
+
+
+export const getPosts: RequestHandler = async (request, response) => {
+    let page = 1;
+
+    if (request.query.page) {
+        const parsedPage = parseInt(request.query.page as string);
+
+        if (isNaN(parsedPage) || parsedPage <= 0) {
+            return response.status(400).json({ error: "Página inexistente" });
+        };
+
+        page = parsedPage;
+    };
+
+    let posts = await getAllPosts(page);
+
+    const postsToReturn = posts.map(post => ({
+        id: post.id,
+        status: post.status,
+        title: post.title,
+        createdAt: post.createdAt,
+        cover: coverToUrl(post.cover),
+        authorName: post.author?.name,
+        tags: post.tags,
+        slug: post.slug
+    }));
+
+    response.status(200).json({ posts: postsToReturn, page });
+
+};
+
+export const getPost: RequestHandler = async (request, response) => {
+    return response.status(501).json({ message: "Not implemented yet" });
+};
 
 export const addPost = async (request: ExtenedRequest, response: Response) => {
     if (!request.user) return;
@@ -144,15 +179,6 @@ export const editPost = async (request: ExtenedRequest, response: Response) => {
     });
 
 };
-
-export const getPosts: RequestHandler = async (request, response) => {
-    return response.status(501).json({ message: "Not implemented yet" });
-};
-
-export const getPost: RequestHandler = async (request, response) => {
-    return response.status(501).json({ message: "Not implemented yet" });
-};
-
 
 export const removePost = async (request: ExtenedRequest, response: Response) => {
     const { slug } = request.params;

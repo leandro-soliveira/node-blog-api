@@ -4,6 +4,41 @@ import slug from "slug";
 import { prisma } from "../libs/prisma";
 import { Prisma } from "../libs/generated/prisma/client";
 
+export const getAllPosts = async (page: number) => {
+    let perPage = 5;
+    if (page <= 0) return [];
+
+    const posts = await prisma.post.findMany({
+        include: {
+            author: {
+                select: {
+                    name: true
+                }
+            }
+        },
+        orderBy: {
+            createdAt: 'desc'
+        },
+        take: perPage,
+        skip: (page - 1) * perPage
+    });
+
+    return posts;
+};
+
+export const getPostBySlug = async (slug: string) => {
+    return await prisma.post.findUnique({
+        where: { slug },
+        include: {
+            author: {
+                select: {
+                    name: true
+                }
+            }
+        }
+    });
+};
+
 export const handleCover = async (file: Express.Multer.File) => {
 
     const allowed = ['image/jpeg', 'image/jpg', 'image/png'];
@@ -24,19 +59,6 @@ export const handleCover = async (file: Express.Multer.File) => {
     }
 
     return false;
-};
-
-export const getPostBySlug = async (slug: string) => {
-    return await prisma.post.findUnique({
-        where: { slug },
-        include: {
-            author: {
-                select: {
-                    name: true
-                }
-            }
-        }
-    });
 };
 
 export const createPostSlug = async (title: string) => {

@@ -7,6 +7,6 @@ mainRoutes.get('/ping', (request, response) => {
     response.json({ pong: true });
 })
 
-mainRoutes.get('/posts', mainController.getAllPosts); // ainda não implementado
+mainRoutes.get('/posts', mainController.getAllPosts);
 mainRoutes.get('/posts/:slug', mainController.getPost); // ainda não implementado
 mainRoutes.get('/posts/:slug/related', mainController.getRelatedPosts); // ainda não implementado

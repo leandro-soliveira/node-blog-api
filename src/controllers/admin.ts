@@ -6,7 +6,7 @@ import { getUserById } from "../services/user";
 import { coverToUrl } from "../utils/cover-to-url";
 
 
-export const getPosts: RequestHandler = async (request, response) => {
+export const getPosts = async (request: ExtenedRequest, response: Response) => {
     let page = 1;
 
     if (request.query.page) {
@@ -36,7 +36,7 @@ export const getPosts: RequestHandler = async (request, response) => {
 
 };
 
-export const getPost: RequestHandler = async (request, response) => {
+export const getPost = async (request: ExtenedRequest, response: Response) => {
     const { slug } = request.params;
 
     if (typeof slug !== "string") {

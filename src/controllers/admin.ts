@@ -37,7 +37,32 @@ export const getPosts: RequestHandler = async (request, response) => {
 };
 
 export const getPost: RequestHandler = async (request, response) => {
-    return response.status(501).json({ message: "Not implemented yet" });
+    const { slug } = request.params;
+
+    if (typeof slug !== "string") {
+        return response.status(400).json({ error: "Slug inválido" });
+    };
+
+    const post = await getPostBySlug(slug);
+
+    if (!post) {
+        return response.status(404).json({ error: "Post não encontrado" });
+    };
+
+    return response.status(200).json({
+        post: {
+            id: post.id,
+            status: post.status,
+            title: post.title,
+            createdAt: post.createdAt,
+            cover: coverToUrl(post.cover),
+            authorName: post.author?.name,
+            tags: post.tags,
+            body: post.body,
+            slug: post.slug
+        }
+    });
+
 };
 
 export const addPost = async (request: ExtenedRequest, response: Response) => {
